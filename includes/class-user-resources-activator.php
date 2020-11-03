@@ -29,8 +29,11 @@ class User_Resources_Activator {
 	 *
 	 * @since    1.0.0
 	 */
-	public static function activate() {
 
+	public static function activate() {
+		$plugin_admin = new User_Resources_Admin( 'user-resources', USER_RESOURCES_VERSION);
+		$plugin_admin->resources_cpt();
+		flush_rewrite_rules();
 	}
 
 }

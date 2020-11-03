@@ -30,7 +30,8 @@ class User_Resources_Deactivator {
 	 * @since    1.0.0
 	 */
 	public static function deactivate() {
-
+		// unregister_post_type( 'resources' );
+		// flush_rewrite_rules();
 	}
 
 }
