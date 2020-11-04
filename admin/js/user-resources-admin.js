@@ -28,5 +28,31 @@
 	 * Although scripts in the WordPress core, Plugins and Themes may be
 	 * practising this, we should strive to set a better example in our own work.
 	 */
+	$( document ).ready(function() {
+		attachmentRemoval();
+	});
+
+	function attachmentRemoval(){
+		$('.resource.uploaded-attachment').on('click', function(e){
+			e.preventDefault(); 
+			var attachName = $(this).data('url');
+			var pageID = $(this).data('post-id');
+			var securityNonce = $('#resource_cpt_nonce').val();
+			$.ajax({
+				type : "POST",
+				dataType : "json",
+				url : localizeAjax.ajaxurl,
+				data : {action : "removal_res_attachment", attachName : attachName, securityNonce : securityNonce, pageID : pageID},
+				success : function(response){
+					console.log(response);
+					if(response == true){
+						location.reload();
+					}else{
+						alert("Try again later");
+					}
+				}
+			})
+		});
+	}
 
 })( jQuery );

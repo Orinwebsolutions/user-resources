@@ -160,6 +160,8 @@ class User_Resources {
 		$this->loader->add_action( 'add_meta_boxes', $plugin_admin, 'resource_attachment');
 		$this->loader->add_action( 'save_post', $plugin_admin, 'resource_attachment_save');
 		$this->loader->add_action( 'post_edit_form_tag', $plugin_admin, 'update_form_settings');
+		$this->loader->add_action( 'init', $plugin_admin, 'resources_cpt_taxonomies');
+		$this->loader->add_action( 'wp_ajax_removal_res_attachment', $plugin_admin, 'resources_attachment_remove');
 
 	}
 

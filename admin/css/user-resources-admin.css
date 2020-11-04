@@ -2,3 +2,20 @@
  * All of the CSS for your admin-specific functionality should be
  * included in this file.
  */
+ .resource.uploaded-attachment {
+    position: relative;
+    font-size: 50px;
+    cursor: none;
+}
+ .resource.uploaded-attachment:before{
+    width: 20px;
+    content: " ";
+    background-image: url(../img/close.jpg);
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 20px;
+    background-position: center;
+    background-size: cover;
+    cursor: pointer;
+}

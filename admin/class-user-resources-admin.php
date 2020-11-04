@@ -97,6 +97,7 @@ class User_Resources_Admin {
 		 */
 
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/user-resources-admin.js', array( 'jquery' ), $this->version, false );
+		wp_localize_script( $this->plugin_name, 'localizeAjax', array( 'ajaxurl' => admin_url( 'admin-ajax.php' )));
 
 	}
 
@@ -172,7 +173,7 @@ class User_Resources_Admin {
 			'image/jpeg' => 'image-2.jpg');
 		$html = '<p class="description">Upload you attachment</p><br/>';
 		if(!empty($attachment_file)){
-			$html .= '<a href="#"><img src="'.PLUGIN_FILE_URL.'img/'.$fileTypes[$attachment_file[1]].'" alt="" width="50" height="50" /></a>
+			$html .= '<a class="resource uploaded-attachment" href="#" data-url="'.$attachment_file[0].'" data-post-id="'.$post->ID.'"><img src="'.PLUGIN_FILE_URL.'admin/img/'.$fileTypes[$attachment_file[1]].'" alt="" width="50" height="50" /></a>
 			'.$attachment_file[0].'<br/>';
 		}
 		$html .= '<input type="file" id="resource_cpt_attachment" name="resource_cpt_file_attachment" value="" /><br/>';
@@ -186,7 +187,6 @@ class User_Resources_Admin {
 		$dir = PLUGIN_DIR;
 		/* --- security verification --- */
 		if(isset($_POST['resource_cpt_nonce']) && !wp_verify_nonce($_POST['resource_cpt_nonce'], 'resource_cpt_attachment_nonce')) {
-			file_put_contents($dir."/testing.txt","inside if wp_verify_nonce");
 			return $postid;
 		} // end if
 			
@@ -253,4 +253,46 @@ class User_Resources_Admin {
 		} // end if
 	}
 
+	function resources_cpt_taxonomies() {
+		$labels = array(
+			'name'              => _x( 'Resources country', 'taxonomy general name', 'textdomain' ),
+			'singular_name'     => _x( 'Resource country', 'taxonomy singular name', 'textdomain' ),
+			'search_items'      => __( 'Search Resources country', 'textdomain' ),
+			'all_items'         => __( 'All Resources country', 'textdomain' ),
+			'parent_item'       => __( 'Parent Resource country', 'textdomain' ),
+			'parent_item_colon' => __( 'Parent Resource country:', 'textdomain' ),
+			'edit_item'         => __( 'Edit Resource country', 'textdomain' ),
+			'update_item'       => __( 'Update Resource country', 'textdomain' ),
+			'add_new_item'      => __( 'Add New Resource country', 'textdomain' ),
+			'new_item_name'     => __( 'New Resource country Name', 'textdomain' ),
+			'menu_name'         => __( 'Resource country', 'textdomain' ),
+		);
+	 
+		$args = array(
+			'hierarchical'      => true,
+			'labels'            => $labels,
+			'show_ui'           => true,
+			'show_admin_column' => true,
+			'query_var'         => true,
+			'rewrite'           => array( 'slug' => 'resource_country' ),
+		);
+	 
+		register_taxonomy( 'resource_country', array( 'resources' ), $args );
+	}
+
+	public function resources_attachment_remove()
+	{
+		if( !wp_verify_nonce($_POST['securityNonce'], 'resource_cpt_attachment_nonce')) {
+			return;
+		} // end if
+
+		if(!empty($_POST['attachName']) && !empty($_POST['pageID'])){
+			$upload_dir = wp_upload_dir();
+			$user_dirname = $upload_dir['basedir'].'/user-resources';
+			wp_delete_file($user_dirname."/".$_POST['attachName']);
+			$result = delete_post_meta($_POST['pageID'], 'resource_cpt_file_attachment');
+			wp_send_json($result);
+		}
+
+	}
 }
