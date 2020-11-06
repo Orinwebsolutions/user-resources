@@ -146,7 +146,7 @@ class User_Resources_Admin {
 			 ),
 		  'has_archive'   => true,
 		);
-		register_post_type( 'resources', $args ); 
+		register_post_type( 'user-resources', $args ); 
 	}
 
 	public function resource_attachment(){
@@ -155,7 +155,7 @@ class User_Resources_Admin {
 			"resource_attachment", 
 			"Resource Documents", 
 			array($this, "rendor_upload_area"), 
-			"resources", 
+			"user-resources", 
 			"normal", 
 			"low");
 	}
@@ -163,7 +163,7 @@ class User_Resources_Admin {
 	public function update_form_settings()
 	{
 		global $post;
-		if(get_post_type( $post->ID ) == 'resources') {
+		if(get_post_type( $post->ID ) == 'user-resources') {
 			echo ' enctype="multipart/form-data"';
 		}
 	}
@@ -172,18 +172,6 @@ class User_Resources_Admin {
 	{
 		wp_nonce_field('resource_cpt_attachment_nonce', 'resource_cpt_nonce');
 		$attachment_file = get_post_meta( $post->ID, 'resource_cpt_file_attachment', true );
-		// $fileTypes = array(
-		// 	'application/pdf'=> 'pdf.png', 
-		// 	'application/vnd.ms-excel' => 'xls.jpg', 
-		// 	'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'xls.jpg',
-		// 	'application/vnd.ms-powerpoint' => 'ppt',
-		// 	'application/vnd.oasis.opendocument.text' => 'doc.png',
-		// 	'application/vnd.openxmlformats-officedocument.presentationml.presentation' => 'ppt.png',
-		// 	'application/msword' => 'doc.png', 
-		// 	'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'doc.png',
-		// 	'image/png' => 'image-2.jpg', 
-		// 	'image/gif' => 'image-2.jpg', 
-		// 	'image/jpeg' => 'image-2.jpg');
 		$html = '<p class="description">Upload you attachment</p><br/>';
 		if(!empty($attachment_file)){
 			$html .= '<a class="resource uploaded-attachment" href="#" data-url="'.$attachment_file[0].'" data-post-id="'.$post->ID.'"><img src="'.PLUGIN_FILE_URL.'admin/img/'.$this->fileTypes[$attachment_file[1]].'" alt="" width="50" height="50" /></a>
@@ -207,7 +195,7 @@ class User_Resources_Admin {
 			return $postid;
 		} // end if
 			
-		if(isset($_POST['post_type']) && 'resources' == $_POST['post_type']) {
+		if(isset($_POST['post_type']) && 'user-resources' == $_POST['post_type']) {
 			if(!current_user_can('edit_page', $postid)) {
 				return $postid;
 			} // end if
@@ -290,7 +278,7 @@ class User_Resources_Admin {
 			'rewrite'           => array( 'slug' => 'resource_country' ),
 		);
 	 
-		register_taxonomy( 'resource_country', array( 'resources' ), $args );
+		register_taxonomy( 'resource_country', array( 'user-resources' ), $args );
 	}
 
 	public function resources_attachment_remove()
@@ -350,7 +338,7 @@ class User_Resources_Admin {
 			}
 			$user_locale = get_user_meta($userProfile->ID, 'user_locale', true);
 			$args = array(
-				'post_type' => 'resources',
+				'post_type' => 'user-resources',
 				'tax_query' => array(
 					array(
 						'taxonomy' => 'resource_country',
