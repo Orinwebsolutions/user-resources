@@ -32,6 +32,7 @@ class User_Resources_Activator {
 
 	public static function activate() {
 		$plugin_admin = new User_Resources_Admin( 'user-resources', USER_RESOURCES_VERSION);
+		$plugin_admin->user_resource_page_setup();
 		$plugin_admin->resources_cpt();
 		flush_rewrite_rules();
 	}

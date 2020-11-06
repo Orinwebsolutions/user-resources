@@ -39,6 +39,7 @@ class User_Resources_Admin {
 	 * @var      string    $version    The current version of this plugin.
 	 */
 	private $version;
+	private $fileTypes;
 
 	/**
 	 * Initialize the class and set its properties.
@@ -51,6 +52,18 @@ class User_Resources_Admin {
 
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
+		$this->fileTypes =  array(
+			'application/pdf'=> 'pdf.png', 
+			'application/vnd.ms-excel' => 'xls.jpg', 
+			'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'xls.jpg',
+			'application/vnd.ms-powerpoint' => 'ppt',
+			'application/vnd.oasis.opendocument.text' => 'doc.png',
+			'application/vnd.openxmlformats-officedocument.presentationml.presentation' => 'ppt.png',
+			'application/msword' => 'doc.png', 
+			'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'doc.png',
+			'image/png' => 'image-2.jpg', 
+			'image/gif' => 'image-2.jpg', 
+			'image/jpeg' => 'image-2.jpg');
 
 	}
 
@@ -159,21 +172,21 @@ class User_Resources_Admin {
 	{
 		wp_nonce_field('resource_cpt_attachment_nonce', 'resource_cpt_nonce');
 		$attachment_file = get_post_meta( $post->ID, 'resource_cpt_file_attachment', true );
-		$fileTypes = array(
-			'application/pdf'=> 'pdf.png', 
-			'application/vnd.ms-excel' => 'xls.jpg', 
-			'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'xls.jpg',
-			'application/vnd.ms-powerpoint' => 'ppt',
-			'application/vnd.oasis.opendocument.text' => 'doc.png',
-			'application/vnd.openxmlformats-officedocument.presentationml.presentation' => 'ppt.png',
-			'application/msword' => 'doc.png', 
-			'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'doc.png',
-			'image/png' => 'image-2.jpg', 
-			'image/gif' => 'image-2.jpg', 
-			'image/jpeg' => 'image-2.jpg');
+		// $fileTypes = array(
+		// 	'application/pdf'=> 'pdf.png', 
+		// 	'application/vnd.ms-excel' => 'xls.jpg', 
+		// 	'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'xls.jpg',
+		// 	'application/vnd.ms-powerpoint' => 'ppt',
+		// 	'application/vnd.oasis.opendocument.text' => 'doc.png',
+		// 	'application/vnd.openxmlformats-officedocument.presentationml.presentation' => 'ppt.png',
+		// 	'application/msword' => 'doc.png', 
+		// 	'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'doc.png',
+		// 	'image/png' => 'image-2.jpg', 
+		// 	'image/gif' => 'image-2.jpg', 
+		// 	'image/jpeg' => 'image-2.jpg');
 		$html = '<p class="description">Upload you attachment</p><br/>';
 		if(!empty($attachment_file)){
-			$html .= '<a class="resource uploaded-attachment" href="#" data-url="'.$attachment_file[0].'" data-post-id="'.$post->ID.'"><img src="'.PLUGIN_FILE_URL.'admin/img/'.$fileTypes[$attachment_file[1]].'" alt="" width="50" height="50" /></a>
+			$html .= '<a class="resource uploaded-attachment" href="#" data-url="'.$attachment_file[0].'" data-post-id="'.$post->ID.'"><img src="'.PLUGIN_FILE_URL.'admin/img/'.$this->fileTypes[$attachment_file[1]].'" alt="" width="50" height="50" /></a>
 			'.$attachment_file[0].'<br/>';
 		}
 		$html .= '<input type="file" id="resource_cpt_attachment" name="resource_cpt_file_attachment" value="" /><br/>';
@@ -294,5 +307,141 @@ class User_Resources_Admin {
 			wp_send_json($result);
 		}
 
+	}
+	
+	public function user_resource_page_setup()
+	{
+		if(!get_option('users_can_register'))
+		{
+			update_option('users_can_register', true);
+			update_option('default_role', 'subscriber');
+
+			// Create post object
+			$user_resource_page = array(
+				'post_title'    => 'Resource Area',
+				'post_content'  => '[user_resource_area]',
+				'post_status'   => 'publish',
+				'post_type'		=> 'page',
+				'post_author'   => 1,
+			);
+   
+			// Insert the post into the database
+			$userProPostID = wp_insert_post( $user_resource_page );
+			update_option('user_resource_page_id', $userProPostID);
+		}
+	}
+
+	public function user_resource_page()
+	{
+		add_shortcode('user_resource_area', array($this, 'user_resource_short_code'));
+	}
+
+	public function user_resource_short_code()
+	{
+
+
+		if ( is_user_logged_in() ) {
+			$userProfile = get_user_by('ID', get_current_user_id());
+			$userProfilePage = '<div class="row">';
+			$userProfilePage .= '<div class="col-sm-12 col-md-12 col-margins"><h2>User Resources</h2></div>';									
+			$upload_dir = wp_upload_dir();
+			if ( ! empty( $upload_dir['baseurl'] ) ) {
+				$user_dirname = $upload_dir['baseurl'].'/user-resources';
+			}
+			$user_locale = get_user_meta($userProfile->ID, 'user_locale', true);
+			$args = array(
+				'post_type' => 'resources',
+				'tax_query' => array(
+					array(
+						'taxonomy' => 'resource_country',
+						'field'    => 'slug',
+						'terms'    => $user_locale,
+					),
+				),
+			);
+
+			$the_query = new WP_Query( $args ); 
+				if ( $the_query->have_posts() ) : 
+					$userProfilePage .= '<table>';
+					$userProfilePage .= '<tr>';
+					$userProfilePage .= '<th>Type</th>';
+					$userProfilePage .= '<th>Title</th>';
+					$userProfilePage .= '<th>Description</th>';
+					$userProfilePage .= '<th>Uploaded date</th>';
+					$userProfilePage .= '<th>Download</th>';										
+					$userProfilePage .= '</tr>';
+					while ( $the_query->have_posts() ) : $the_query->the_post();
+						$attachments = get_post_meta($the_query->post->ID,'resource_cpt_file_attachment', true);
+						if(!empty($attachments)){
+							$userProfilePage .= '<tr>';
+							$userProfilePage .= '<td>';
+							$userProfilePage .= '<img src="'.PLUGIN_FILE_URL.'admin/img/'.$this->fileTypes[$attachments[1]].'" alt="" width="150" height="150" />';
+							$userProfilePage .= '</td>';
+							$userProfilePage .= '<td>';
+							$userProfilePage .= $the_query->post->post_title;
+							$userProfilePage .= '</td>';
+							$userProfilePage .= '<td>';
+							$userProfilePage .= wp_trim_words($the_query->post->post_content, 20 , '...');
+							$userProfilePage .= '</td>';
+							$userProfilePage .= '<td>';
+							$userProfilePage .= $the_query->post->post_date;
+							$userProfilePage .= '</td>';
+							$userProfilePage .= '<td>';
+							$userProfilePage .= '<a class="download-btn" download="image" href="'.$user_dirname.'/'.$attachments[0].'">Download</a>';
+							$userProfilePage .= '</td>';																								
+							$userProfilePage .= '</tr>';
+						}
+					endwhile;
+					wp_reset_postdata();
+					$userProfilePage .= '</table>';
+				else :
+					$userProfilePage .= 'Sorry, no posts matched your criteria.';
+				endif;
+			$userProfilePage .= '</div>';
+		} else {
+			$userProfilePage = 'You have not logged-in. To view profile use <a href="'.esc_url( wp_login_url( get_permalink() ) ).'" alt="Login">login</a> page.';
+		}
+		return $userProfilePage;
+	}
+
+
+	public function userMetaActivation(WP_User $user) {
+		if($user->roles[0] == 'subscriber')
+		{
+			$terms = get_terms( array( 
+				'taxonomy' => 'resource_country',
+				'parent'   => 0
+			) );
+		?>
+			<h2>User Active</h2>
+			<table class="form-table">
+				<tr>
+					<th><label for="user_country">Country</label></th>
+					<td>
+						<select name="user_country" id="user_country">
+						<option value="" <?php selected( get_user_meta($user->ID, 'user_locale', true), '' ); ?>>Select user Country</option>
+						<?php
+						foreach ($terms as $term) {
+							echo '<option value="'.$term->slug.'"'.selected( get_user_meta($user->ID, 'user_locale', true), $term->slug ).'>'.$term->name.'</option>';
+						}
+						?>
+						</select>
+					</td>
+				</tr>									
+			</table>
+		<?php
+		}
+	}
+
+	public function userMetaActivationSave($userId) {
+		if (!current_user_can('edit_user', $userId)) {
+			return;
+		}
+		$user = get_userdata( $userId );
+		
+		if($user->roles[0] == 'subscriber')
+		{
+			update_user_meta($userId, 'user_locale', $_REQUEST['user_country']);
+		}
 	}
 }

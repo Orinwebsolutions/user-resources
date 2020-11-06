@@ -100,4 +100,27 @@ class User_Resources_Public {
 
 	}
 
+	public function wp_login_redirects( $url, $request, $user )
+	{
+		if ( $user && is_object( $user ) && is_a( $user, 'WP_User' ) ) 
+		{
+			if ( $user->has_cap( 'subscriber' ) )
+			{
+				$userResourcePage = get_option('user_resource_page_id');
+				$url = get_permalink($userResourcePage);
+			} 
+			else
+			{
+				$url = admin_url();
+			}
+		}
+		return $url;
+	}
+
+	public function wp_logout_redirects()
+	{
+		wp_safe_redirect(wp_login_url(get_permalink()));
+		exit;
+	}
+
 }

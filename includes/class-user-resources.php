@@ -162,6 +162,13 @@ class User_Resources {
 		$this->loader->add_action( 'post_edit_form_tag', $plugin_admin, 'update_form_settings');
 		$this->loader->add_action( 'init', $plugin_admin, 'resources_cpt_taxonomies');
 		$this->loader->add_action( 'wp_ajax_removal_res_attachment', $plugin_admin, 'resources_attachment_remove');
+		$this->loader->add_action( 'init', $plugin_admin, 'user_resource_page' );
+
+		$this->loader->add_action( 'show_user_profile', $plugin_admin, 'userMetaActivation' );
+		$this->loader->add_action( 'edit_user_profile', $plugin_admin, 'userMetaActivation' );
+
+		$this->loader->add_action( 'personal_options_update', $plugin_admin, 'userMetaActivationSave' );
+		$this->loader->add_action( 'edit_user_profile_update', $plugin_admin, 'userMetaActivationSave' );
 
 	}
 
@@ -178,6 +185,8 @@ class User_Resources {
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
+		$this->loader->add_filter( 'login_redirect', $plugin_public, 'wp_login_redirects', 10, 3 );
+		$this->loader->add_filter( 'logout_redirect', $plugin_public, 'wp_logout_redirects', 10, 3 );
 
 	}
 

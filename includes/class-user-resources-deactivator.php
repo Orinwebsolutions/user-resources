@@ -30,8 +30,15 @@ class User_Resources_Deactivator {
 	 * @since    1.0.0
 	 */
 	public static function deactivate() {
-		// unregister_post_type( 'resources' );
-		// flush_rewrite_rules();
+		if(get_option('users_can_register'))
+		{
+			update_option('users_can_register', false);
+			if( !empty(get_option('user_resource_page_id')) ){
+				$postId = get_option('user_resource_page_id');
+				wp_delete_post($postId);
+			}
+			delete_option('user_resource_page_id');
+		}
 	}
 
 }
