@@ -337,13 +337,14 @@ class User_Resources_Admin {
 				$user_dirname = $upload_dir['baseurl'].'/user-resources';
 			}
 			$user_locale = get_user_meta($userProfile->ID, 'user_locale', true);
+			$user_locale_child = get_user_meta($userProfile->ID, 'user_locale_child', true);
 			$args = array(
 				'post_type' => 'user-resources',
 				'tax_query' => array(
 					array(
 						'taxonomy' => 'resource_country',
 						'field'    => 'slug',
-						'terms'    => $user_locale,
+						'terms'    => array($user_locale_child, $user_locale),
 					),
 				),
 			);
@@ -425,7 +426,6 @@ class User_Resources_Admin {
 							<option value="" <?php selected( get_user_meta($user->ID, 'user_locale_child', true), '' ); ?>>Select user Country sub</option>
 							<?php
 							$parent_term_id = get_user_meta($user->ID, 'user_locale_term_id', true);
-							echo get_user_meta($user->ID, 'user_locale_child', true);
 							if(!empty($parent_term_id)){
 								$childTerms = get_terms( array( 
 									'taxonomy' => 'resource_country',
