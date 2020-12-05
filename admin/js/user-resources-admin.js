@@ -30,6 +30,7 @@
 	 */
 	$( document ).ready(function() {
 		attachmentRemoval();
+		fetchChildElements();
 	});
 
 	function attachmentRemoval(){
@@ -50,6 +51,27 @@
 					}else{
 						alert("Try again later");
 					}
+				}
+			})
+		});
+	}
+
+	function fetchChildElements() {
+		$('#user_country').on('change', function(){
+			var parentID = $(this).find(':selected').data('term-id');
+			var currentProfId = $('#profile-id').val();
+			$.ajax({
+				type : "POST",
+				dataType : "html",
+				url : localizeAjax.ajaxurl,
+				data : {action : "fetch_child_terms", parentID : parentID, currentProfId : currentProfId},
+				beforeSend: function() {
+					$('.loading-icon').removeClass('hidden');
+				},
+				success : function(response){
+					$('.loading-icon').addClass('hidden');
+					console.log($.parseJSON(response));
+					$('#user_country_child').html($.parseJSON(response));
 				}
 			})
 		});

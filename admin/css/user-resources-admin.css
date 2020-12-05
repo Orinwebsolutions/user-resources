@@ -19,3 +19,6 @@
     background-size: cover;
     cursor: pointer;
 }
+.hidden{
+    display: none;
+}

@@ -170,6 +170,8 @@ class User_Resources {
 		$this->loader->add_action( 'personal_options_update', $plugin_admin, 'userMetaActivationSave' );
 		$this->loader->add_action( 'edit_user_profile_update', $plugin_admin, 'userMetaActivationSave' );
 
+		$this->loader->add_action( 'wp_ajax_fetch_child_terms', $plugin_admin, 'fetch_child_terms' );
+
 	}
 
 	/**

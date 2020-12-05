@@ -398,7 +398,8 @@ class User_Resources_Admin {
 		{
 			$terms = get_terms( array( 
 				'taxonomy' => 'resource_country',
-				'parent'   => 0
+				'parent'   => 0,
+				'hide_empty' => false
 			) );
 		?>
 			<h2>User Active</h2>
@@ -410,10 +411,33 @@ class User_Resources_Admin {
 						<option value="" <?php selected( get_user_meta($user->ID, 'user_locale', true), '' ); ?>>Select user Country</option>
 						<?php
 						foreach ($terms as $term) {
-							echo '<option value="'.$term->slug.'"'.selected( get_user_meta($user->ID, 'user_locale', true), $term->slug ).'>'.$term->name.'</option>';
+							echo '<option data-term-id='.$term->term_id.' value="'.$term->slug.'" '.selected( get_user_meta($user->ID, 'user_locale', true), $term->slug, false ).'>'.$term->name.'</option>';
 						}
 						?>
 						</select>
+						<input type="hidden" id="profile-id" name="user-id" value="<?php echo  $user->ID; ?>"/>
+					</td>
+				</tr>
+				<tr>
+					<th><label for="user_country_child">Country subs</label></th>
+					<td>
+						<select name="user_country_child" id="user_country_child">
+							<option value="" <?php selected( get_user_meta($user->ID, 'user_locale_child', true), '' ); ?>>Select user Country sub</option>
+							<?php
+							$parent_term_id = get_user_meta($user->ID, 'user_locale_term_id', true);
+							echo get_user_meta($user->ID, 'user_locale_child', true);
+							if(!empty($parent_term_id)){
+								$childTerms = get_terms( array( 
+									'taxonomy' => 'resource_country',
+									'parent' => $parent_term_id,
+									'hide_empty' => false
+								) );
+								foreach ($childTerms as $childTerm) {
+								echo '<option data-term-id='.$childTerm->term_id.' value="'.$childTerm->slug.'" '.selected( get_user_meta($user->ID, 'user_locale_child', true), $childTerm->slug, false ).'>'.$childTerm->name.'</option>';
+								}
+							}
+							?>
+						</select><img class="loading-icon hidden" src="<?php echo plugin_dir_url( __FILE__ ); ?>/img/loading.gif" width="20" height="20"/>
 					</td>
 				</tr>									
 			</table>
@@ -429,7 +453,30 @@ class User_Resources_Admin {
 		
 		if($user->roles[0] == 'subscriber')
 		{
+			$selectedTerm = get_term_by('slug', $_REQUEST['user_country'], 'resource_country');
 			update_user_meta($userId, 'user_locale', $_REQUEST['user_country']);
+			update_user_meta($userId, 'user_locale_term_id', $selectedTerm->term_id);
+			update_user_meta($userId, 'user_locale_child', $_REQUEST['user_country_child']);
+		}
+	}
+
+	public function fetch_child_terms() {
+		if(!empty($_POST['parentID']) && !empty($_POST['currentProfId'])){
+			$parent_term_id = $_POST['parentID'];
+			$current_user_id = $_POST['currentProfId'];
+			$terms = get_terms( array( 
+				'taxonomy' => 'resource_country',
+				'parent' => $parent_term_id,
+				'hide_empty' => false
+			) );
+
+			$domOptions = '<option value="" '.selected( get_user_meta($current_user_id, 'user_locale_child', true), '', false ).' >Select user Country sub</option>';
+			$domOptions .= $current_user_id;
+			foreach ($terms as $term) {
+				$domOptions .= '<option value="'.$term->slug.'"'.selected( get_user_meta($current_user_id, 'user_locale_child', true), $term->slug, false ).'>'.$term->name.'</option>';
+			}
+			
+			wp_send_json($domOptions);
 		}
 	}
 }
